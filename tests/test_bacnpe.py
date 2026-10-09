@@ -29,7 +29,7 @@ def test_clonal_tree_rejects_invalid_n(bad_n):
         ClonalTree(bad_n)
 
 
-def test_sequence_simulator_result_type_and_size_without_recombination():
+def test_sequence_simulator_result_type_and_size_no_events():
     np.random.seed(20)
     tree = ClonalTree(6)
     result = ClonalOrigin_seq_sim(tree, rho_site=0, theta_site=0, L=12, delta=4)
