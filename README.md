@@ -7,9 +7,6 @@
   ClonalOrigin-style ancestral recombination graph and returns 46 summary
   statistics.
 
-All implementation helpers have leading underscores and are intentionally not
-part of the public API.
-
 ## Installation
 
 ```bash
@@ -33,13 +30,9 @@ np.random.seed(123)
 tree = ClonalTree(20)
 statistics = ClonalOrigin_seq_sim(
     tree,
-    rho_site=0.001,
-    theta_site=0.01,
-    L=100,
-    delta=20,
+    rho_site=0.02,
+    theta_site=0.03,
+    L=1000,
+    delta=200,
 )
-assert statistics.shape == (46,)
 ```
-
-The implementation uses NumPy's global random state, so calling
-`numpy.random.seed(...)` before simulation makes a run reproducible.
