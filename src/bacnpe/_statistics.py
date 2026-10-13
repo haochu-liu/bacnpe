@@ -151,7 +151,7 @@ def _segment_summary_stats(tree: ClonalTree, seg_mat: np.ndarray) -> np.ndarray:
     if length < 1:
         raise ValueError("The genetic matrix must contain at least one site.")
 
-    result = np.zeros(46, dtype=float)
+    result = np.zeros(30, dtype=float)
     segregating = np.flatnonzero(seg_mat.any(axis=0) & ~seg_mat.all(axis=0))
     counts = {"near": 0, "far": 0, "20_50": 0, "50_80": 0}
     sums = {
@@ -197,24 +197,24 @@ def _segment_summary_stats(tree: ClonalTree, seg_mat: np.ndarray) -> np.ndarray:
             result[total_index] = values[metric]
             result[mean_index] = values[metric] / counts[group] if counts[group] else 0.0
 
-    result[32] = _homoplasy_index(tree, seg_mat)
+    result[16] = _homoplasy_index(tree, seg_mat)
     count_s = len(segregating)
-    result[33] = count_s / length
-    result[34] = _watterson_theta(seg_mat, count_s)
+    result[17] = count_s / length
+    result[18] = _watterson_theta(seg_mat, count_s)
     pi = _tajima_pi(seg_mat, wakeley=True)
-    result[35], result[36] = pi["pi"], pi["pi2"]
-    result[37] = _tajima_d(seg_mat, result[35], result[34], count_s)
+    result[19], result[20] = pi["pi"], pi["pi2"]
+    result[21] = _tajima_d(seg_mat, result[35], result[34], count_s)
     wall = _wall_bq(seg_mat[:, segregating])
-    result[38], result[39] = wall["B"], wall["Q"]
+    result[22], result[23] = wall["B"], wall["Q"]
 
     incompatible.sort(key=lambda interval: interval[1])
     last_cut = -1
     for start, end in incompatible:
         if start > last_cut:
-            result[40] += 1
+            result[24] += 1
             last_cut = end - 1
 
-    result[41] = float(np.mean(r_squares)) if r_squares else 0.0
+    result[25] = float(np.mean(r_squares)) if r_squares else 0.0
     if len(r_squares) >= 4 and len(set(distances)) >= 3:
         unique_distances = np.unique(distances)
         means = np.array(
@@ -222,8 +222,8 @@ def _segment_summary_stats(tree: ClonalTree, seg_mat: np.ndarray) -> np.ndarray:
              for distance in unique_distances]
         )
         try:
-            result[42:45] = _exp_regression(unique_distances.astype(float), means)
+            result[26:29] = _exp_regression(unique_distances.astype(float), means)
         except (RuntimeError, ValueError, TypeError, FloatingPointError):
-            result[42:45] = 0.0
-    result[45] = length
+            result[26:29] = 0.0
+    result[29] = length
     return result
