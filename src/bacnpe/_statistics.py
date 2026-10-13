@@ -147,55 +147,76 @@ def _segment_summary_stats(tree: ClonalTree, seg_mat: np.ndarray) -> np.ndarray:
         raise ValueError("`seg_mat` must be a two-dimensional matrix.")
     if tree.n != seg_mat.shape[0]:
         raise ValueError("The tree and genetic matrix must have the same number of sequences.")
+
     length = seg_mat.shape[1]
     if length < 1:
         raise ValueError("The genetic matrix must contain at least one site.")
 
-    result = np.zeros(30, dtype=float)
-    segregating = np.flatnonzero(seg_mat.any(axis=0) & ~seg_mat.all(axis=0))
-    counts = {"near": 0, "far": 0, "20_50": 0, "50_80": 0}
-    sums = {
-        key: {"D": 0.0, "D_prime": 0.0, "r_square": 0.0, "g4": 0.0}
-        for key in counts
-    }
-    r_squares: list[float] = []
-    distances: list[int] = []
-    incompatible: list[tuple[int, int]] = []
+    result = np.full(30, np.nan, dtype=float)
 
-    for left_pos in range(len(segregating) - 1):
-        for right_pos in range(left_pos + 1, len(segregating)):
-            left, right = int(segregating[left_pos]), int(segregating[right_pos])
-            distance = right - left
-            ld = _ld(seg_mat[:, [left, right]])
-            g4 = _g4_test(seg_mat[:, [left, right]])
-            r_squares.append(ld["r_square"])
-            distances.append(distance)
-            if g4:
-                incompatible.append((left, right))
+    has_true = seg_mat.any(axis=0)
+    has_false = ~seg_mat.all(axis=0)
+    segregating = np.where(has_true & has_false)[0]
 
-            groups = ["near" if distance < length / 2 else "far"]
-            if 20 <= distance < 50:
-                groups.append("20_50")
-            if 50 <= distance <= 80:
-                groups.append("50_80")
-            for group in groups:
-                counts[group] += 1
-                sums[group]["D"] += abs(ld["D"])
-                sums[group]["D_prime"] += ld["D_prime"]
-                sums[group]["r_square"] += ld["r_square"]
-                sums[group]["g4"] += float(g4)
+    near_count = 0
+    far_count = 0
+    d_near = d_far = 0.0
+    dp_near = dp_far = 0.0
+    r2_near = r2_far = 0.0
+    g4_near = g4_far = 0.0
 
-    ordered_groups = ["near", "far", "20_50", "50_80"]
-    # Totals occupy 0:8 and 16:24; means occupy 8:16 and 24:32.
-    for group_index, group in enumerate(ordered_groups):
-        block = 0 if group_index < 2 else 16
-        offset = group_index if group_index < 2 else group_index - 2
-        values = sums[group]
-        for metric_index, metric in enumerate(("D", "D_prime", "r_square", "g4")):
-            total_index = block + 2 * metric_index + offset
-            mean_index = total_index + 8
-            result[total_index] = values[metric]
-            result[mean_index] = values[metric] / counts[group] if counts[group] else 0.0
+    r_squares = []
+    distances = []
+    incompatible = []
+
+    if segregating.size >= 2:
+        for i in range(segregating.size - 1):
+            for j in range(i + 1, segregating.size):
+                distance = segregating[j] - segregating[i]
+                pair = [segregating[i], segregating[j]]
+
+                ld_result = _ld(seg_mat[:, pair])
+                r_square = ld_result["r_square"]
+                r_squares.append(r_square)
+                distances.append(distance)
+
+                g4_result = _g4_test(seg_mat[:, pair])
+                if g4_result:
+                    incompatible.append(
+                        (segregating[i], segregating[j])
+                    )
+
+                if distance < length / 2:
+                    d_near += abs(ld_result["D"])
+                    dp_near += ld_result["D_prime"]
+                    r2_near += r_square
+                    g4_near += g4_result
+                    near_count += 1
+                else:
+                    d_far += abs(ld_result["D"])
+                    dp_far += ld_result["D_prime"]
+                    r2_far += r_square
+                    g4_far += g4_result
+                    far_count += 1
+
+        result[0:8] = [
+            d_near, d_far, dp_near, dp_far,
+            r2_near, r2_far, g4_near, g4_far,
+        ]
+        result[8:16] = [
+            d_near / near_count if near_count else 0,
+            d_far / far_count if far_count else 0,
+            dp_near / near_count if near_count else 0,
+            dp_far / far_count if far_count else 0,
+            r2_near / near_count if near_count else 0,
+            r2_far / far_count if far_count else 0,
+            g4_near / near_count if near_count else 0,
+            g4_far / far_count if far_count else 0,
+        ]
+        result[25] = np.mean(r_squares)
+    else:
+        result[:16] = 0
+        result[25] = 0
 
     result[16] = _homoplasy_index(tree, seg_mat)
     count_s = len(segregating)
@@ -214,7 +235,6 @@ def _segment_summary_stats(tree: ClonalTree, seg_mat: np.ndarray) -> np.ndarray:
             result[24] += 1
             last_cut = end - 1
 
-    result[25] = float(np.mean(r_squares)) if r_squares else 0.0
     if len(r_squares) >= 4 and len(set(distances)) >= 3:
         unique_distances = np.unique(distances)
         means = np.array(
