@@ -224,7 +224,7 @@ def _segment_summary_stats(tree: ClonalTree, seg_mat: np.ndarray) -> np.ndarray:
     result[18] = _watterson_theta(seg_mat, count_s)
     pi = _tajima_pi(seg_mat, wakeley=True)
     result[19], result[20] = pi["pi"], pi["pi2"]
-    result[21] = _tajima_d(seg_mat, result[35], result[34], count_s)
+    result[21] = _tajima_d(seg_mat, result[19], result[18], count_s)
     wall = _wall_bq(seg_mat[:, segregating])
     result[22], result[23] = wall["B"], wall["Q"]
 
