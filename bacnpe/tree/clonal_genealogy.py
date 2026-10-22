@@ -73,8 +73,7 @@ class ClonalTree(_Tree):
 
         # Clonal tree by coalescent only
         while k > 1:
-            # Sample a new event time
-            # Rate is k*(k-1)/2. NumPy uses scale = 1/rate
+            # Sample a new event time, rate is k*(k-1)/2.
             rate = k * (k - 1) / 2.0
             event_time = np.random.exponential(scale=1.0 / rate)
             t_sum += event_time
@@ -107,7 +106,7 @@ class ClonalTree(_Tree):
         self.length = float(np.sum(self.edge[:, 2]))
 
     def to_dict(self) -> dict:
-        """Returns the tree as a dictionary, similar to the R list output."""
+        """Returns the tree as a dictionary."""
         return {
             "edge": self.edge,
             "node_height": self.node_height,
