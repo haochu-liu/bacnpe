@@ -1,24 +1,24 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "bacnpe"
 version = "0.1.0"
-description = "Clonal genealogy and ClonalOrigin sequence simulation utilities"
+description = "Detection of local recombination and mutation hotspots using NPE with ClonalOrigin simulations."
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-    "numpy>=1.23",
-    "scipy>=1.9",
+    "numpy>=1.21",
+    "scipy>=1.7",
+    "pandas>=1.3",
 ]
 
 [project.optional-dependencies]
 test = ["pytest>=7"]
 
 [tool.setuptools.packages.find]
-where = ["src"]
+include = ["bacnpe*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra"
