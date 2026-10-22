@@ -32,7 +32,7 @@ dict(zip(STAT_NAMES, stats))           # 30 named summary statistics
 | `n` (tree)   | int   | ≥ 1 (≥ 3 for `ClonalOrigin_seq_sim`) |
 | `rho_site`   | float | ≥ 0, finite |
 | `theta_site` | float | ≥ 0, finite |
-| `L`          | int   | ≥ 1 |
+| `L`          | int   | ≥ 1 (≥ 3 for summary statistics) |
 | `delta`      | float | ≥ 1, finite |
 
 Wrong types raise `TypeError`; out-of-range values raise `ValueError`.

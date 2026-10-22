@@ -1,15 +1,14 @@
 """
-bacnpe - simulation of bacterial sequences under the ClonalOrigin model, with
-summary statistics for neural posterior estimation (NPE) of local
-recombination and mutation rates.
+bacnpe - simulation of bacterial sequences under the ClonalOrigin model, and then train
+a neural posterior estimation (NPE) model with simulation to detect local recombination and mutation hotspots.
 
 Public API
 ----------
 ClonalTree
     Simulate a clonal genealogy (Kingman coalescent).
 ClonalOrigin_seq_sim
-    Simulate recombination and mutation on a clonal tree and return a
-    30-dimensional vector of summary statistics.
+    Simulate recombination and mutation on a approximated ancestral recombination graph (ARG)
+    based on a clonal genealogy, and return a 30-dimensional vector of summary statistics.
 
 Example
 -------
