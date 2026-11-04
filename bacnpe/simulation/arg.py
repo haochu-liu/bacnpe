@@ -34,18 +34,18 @@ class _ARG(_Tree):
     An approximated ancestral recombination graph (ARG) using ClonalOrigin algorithm.
 
     Simulate coalescent and recombination events by the ClonalOrigin algorithm
-    along a sequence of ``k`` sites, on top of a given clonal tree.
+    along a sequence of ``L`` sites, conditioned on a given clonal genealogy.
 
     Attributes
     ----------
     edge : np.ndarray, shape (n_edges, 3), dtype float64
         Edge matrix with columns [node1 (parent), node2 (child), length].
         Node ids are 1-indexed rows of ``node_height`` / ``node_mat``.
-    edge_mat : np.ndarray, shape (n_edges, k), dtype bool
+    edge_mat : np.ndarray, shape (n_edges, L), dtype bool
         Edge material matrix: which sites are ancestral on each edge.
     node_height : np.ndarray, shape (n_nodes,), dtype float64
         Node heights, sorted in increasing order.
-    node_mat : np.ndarray, shape (n_nodes, k), dtype bool
+    node_mat : np.ndarray, shape (n_nodes, L), dtype bool
         Node material matrix: which sites are ancestral at each node.
     node_clonal : np.ndarray, shape (n_nodes,), dtype bool
         Boolean array indicating clonal nodes.
@@ -62,7 +62,7 @@ class _ARG(_Tree):
     """
 
     def __init__(self, tree_obj: ClonalTree, rho_site: float, L: int,
-                 delta: float, k: Optional[int] = None):
+                 delta: float):
         """
         Initialize an ARG by simulating recombination on a clonal tree.
 
@@ -76,10 +76,6 @@ class _ARG(_Tree):
             The number of sites (>= 1).
         delta : float
             The mean of recombinant segment length (>= 1).
-        k : int, optional
-            The number of sites actually simulated (the distance between two
-            sites in a pair simulator, and the sequence length in the sequence
-            simulator). Defaults to ``L``.
         """
         # Input validation
         if not isinstance(tree_obj, ClonalTree):
@@ -87,7 +83,6 @@ class _ARG(_Tree):
         rho_site = _check_real(rho_site, "rho_site", minimum=0.0)
         L = _check_integer(L, "L", minimum=1)
         delta = _check_real(delta, "delta", minimum=1.0)
-        k = L if k is None else _check_integer(k, "k", minimum=1)
 
         super().__init__(tree_obj.n)
 
@@ -95,7 +90,7 @@ class _ARG(_Tree):
         self.L = L
         self.delta = delta
 
-        self._simulate(tree_obj, rho_site, delta, k)
+        self._simulate(tree_obj, rho_site, delta, L)
 
     def _simulate(self, tree_obj: ClonalTree, rho_site: float, delta: float, k: int) -> None:
         """Simulate the ARG using ClonalOrigin algorithm and store the result."""
@@ -124,7 +119,7 @@ class _ARG(_Tree):
         self.length = float(np.sum(self.edge[:, 2]))
 
     def __repr__(self) -> str:
-        return f"_ARG(n={self.n}, rho={self.rho}, L={self.L}, delta={self.delta})"
+        return f"ARG(n={self.n}, rho={self.rho}, L={self.L}, delta={self.delta})"
 
     def to_dict(self) -> dict:
         """Returns the ARG as a dictionary, similar to the R list output."""
@@ -218,7 +213,6 @@ def _simulate_recombination_events(clonal_edge: np.ndarray, clonal_node_height: 
     # Tree length
     tree_length = np.sum(clonal_edge[:, 2])
     # Probability of each clonal edge to receive a recombination
-    # (proportional to edge length)
     if n > 1:
         edge_probs = clonal_edge[:, 2] / np.sum(clonal_edge[:, 2])
 
@@ -308,7 +302,7 @@ def _simulate_recombination_events(clonal_edge: np.ndarray, clonal_node_height: 
                     # Find edges that span the a_height
                     pool_edge = np.where(
                         (clonal_node_height[clonal_edge[:, 0].astype(int) - 1] >= a_height) &
-                        (clonal_node_height[clonal_edge[:, 1].astype(int) - 1] < a_height)
+                        (clonal_node_height[clonal_edge[:, 1].astype(int) - 1] <  a_height)
                     )[0] + 1
                     recomb_edge[idx, 2] = np.random.choice(pool_edge)
                 else:
