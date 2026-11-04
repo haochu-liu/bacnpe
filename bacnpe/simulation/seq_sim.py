@@ -4,7 +4,7 @@ from __future__ import annotations
 import numpy as np
 
 from .._validation import _check_integer, _check_real
-from ..summary_stats.segment_stats import _segment_summary_stats
+from ..summary_stats.segment_stats import segment_summary_stats
 from ..tree.clonal_genealogy import ClonalTree
 from .arg import _ARG
 from .mutation import _add_mutation
@@ -87,6 +87,6 @@ def ClonalOrigin_seq_sim(tree: ClonalTree, rho_site: float, theta_site: float,
     mat = node_site[:tree_width, :] != node_site[0]
 
     # Compute summary statistics
-    s_vec = _segment_summary_stats(tree, mat)
+    s_vec = segment_summary_stats(tree, mat)
 
     return s_vec

@@ -14,7 +14,7 @@ from .linkage import _hudson_rm_from_intervals, _pairwise_ld_g4, _segregating_si
 from .regression import _exp_regression
 from .wall import _wall_bq
 
-#: Names of the 30 entries returned by :func:`_segment_summary_stats`
+#: Names of the 30 entries returned by :func:`segment_summary_stats`
 #: ("near" = pairs of segregating sites closer than L/2, "far" = the others).
 STAT_NAMES: List[str] = [
     "D_near_sum", "D_far_sum",                  # 0, 1   sum of |D|
@@ -61,7 +61,7 @@ def _sequential_sum(values: np.ndarray) -> float:
     return float(np.cumsum(values)[-1])
 
 
-def _segment_summary_stats(tree: ClonalTree, seg_mat: np.ndarray) -> np.ndarray:
+def segment_summary_stats(tree: ClonalTree, seg_mat: np.ndarray) -> np.ndarray:
     """
     Compute summary statistics for a given clonal tree and genetic matrix.
 
