@@ -1,9 +1,6 @@
 """
 Nucleotide diversity statistics: Watterson's theta, Tajima's pi
 (with Wakeley's variance pi^2) and Tajima's D.
-
-This module merges the original ``Watterson_theta.py``, ``Tajima_pi.py``
-and ``Tajima_D.py``.
 """
 from __future__ import annotations
 

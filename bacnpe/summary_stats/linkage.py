@@ -1,11 +1,6 @@
 """
 Pairwise linkage statistics: LD (D, D', r^2), the four-gamete test,
 Kelly's Z_nS and Hudson's R_m.
-
-This module merges the original ``LD.py``, ``G4_test.py``, ``Kelly_Z.py``
-and ``Hudson_Rm.py``. All statistics are computed for many site pairs at
-once (vectorised), instead of one Python call per pair, using exactly the
-same floating point operations as the original per-pair code.
 """
 from __future__ import annotations
 

@@ -14,6 +14,9 @@ add_mutation
 ClonalOrigin_seq_sim
     Simulate recombination and mutation on a approximated ancestral recombination graph (ARG)
     based on a clonal genealogy, and return a 30-dimensional vector of summary statistics.
+parallel_sim
+    Draw (rho, theta, L) from uniform priors and run ClonalOrigin_seq_sim in
+    parallel, saving parameters and summary statistics to CSV files.
 segment_summary_stats
     Compute the 30-dimensional vector of summary statistics from a clonal
     genealogy and a 0/1 sequence matrix (rows are the leaves).
@@ -34,6 +37,7 @@ Example
 >>> segment_summary_stats(tree, node_site[:tree.n]).shape
 (30,)
 """
+from .parallel import parallel_sim
 from .simulation.arg import ARG
 from .simulation.mutation import add_mutation
 from .simulation.seq_sim import ClonalOrigin_seq_sim
@@ -43,4 +47,4 @@ from .tree.clonal_genealogy import ClonalTree
 __version__ = "0.1.0"
 
 __all__ = ["ClonalTree", "ARG", "add_mutation", "ClonalOrigin_seq_sim",
-           "segment_summary_stats", "__version__"]
+           "parallel_sim", "segment_summary_stats", "__version__"]

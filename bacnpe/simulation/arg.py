@@ -1,23 +1,4 @@
-"""
-Approximated ancestral recombination graph (ARG) under the ClonalOrigin model.
-
-This module merges the original ``ClonalOrigin_ARG.py``, ``seq_simulator.py``
-and ``ClonalOrigin_nodes.py``. The simulation is split into two steps:
-
-1. :func:`_simulate_recombination_events` - draw the recombination edges
-   (all random number generation happens here).
-2. :func:`_build_arg_graph` - deterministically assemble the full ARG
-   (edges, node heights and ancestral material) from those events.
-
-Node / edge conventions (1-indexed, as in the original R implementation)
-------------------------------------------------------------------------
-* Clonal edges are numbered ``1..2n-2`` (row order of ``ClonalTree.edge``);
-  edge ``2n-1`` denotes the virtual edge above the clonal root.
-* ``recomb_edge`` has one row per recombination event with columns
-  ``[b_edge, b_height, a_edge, a_height, x, y]``: the recombinant lineage
-  leaves clonal edge ``b_edge`` at time ``b_height`` and coalesces back onto
-  clonal edge ``a_edge`` at time ``a_height``; it carries sites ``x..y``.
-"""
+"""Approximated ancestral recombination graph (ARG) under the ClonalOrigin model."""
 from __future__ import annotations
 
 from typing import Optional
