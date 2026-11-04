@@ -119,7 +119,8 @@ class ARG(_Tree):
         self.length = float(np.sum(self.edge[:, 2]))
 
     def __repr__(self) -> str:
-        return f"ARG(n={self.n}, rho={self.rho}, L={self.L}, delta={self.delta})"
+        return (f"{type(self).__name__}(n={self.n}, rho={self.rho}, "
+                f"L={self.L}, delta={self.delta})")
 
     def to_dict(self) -> dict:
         """Returns the ARG as a dictionary, similar to the R list output."""

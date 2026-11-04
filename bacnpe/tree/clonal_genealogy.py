@@ -51,7 +51,6 @@ class ClonalTree(_Tree):
         """
         n = _check_integer(n, "n", minimum=1)
         super().__init__(n)
-        self.__class__.__name__ = "ClonalTree"
         self._simulate()
 
     def _simulate(self) -> None:

@@ -104,3 +104,13 @@ def test_add_mutation_bad_inputs():
         add_mutation(arg, -0.1)
     with pytest.raises(ValueError):
         add_mutation(arg, float("nan"))
+
+
+def test_arg_class_name():
+    from bacnpe.tree.base import _Tree
+    arg = ARG(ClonalTree(4), 0.1, 10, 2.0)
+    assert type(arg).__name__ == "ARG" and ARG.__name__ == "ARG"
+    assert repr(arg).startswith("ARG(n=4,")
+    assert isinstance(arg, _Tree)
+    # Building an ARG or a ClonalTree leaves the other class names untouched
+    assert ClonalTree.__name__ == "ClonalTree" and _Tree.__name__ == "Tree"

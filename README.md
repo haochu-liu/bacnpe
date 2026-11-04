@@ -17,7 +17,7 @@ Requires Python ≥ 3.9, NumPy, SciPy and pandas.
 
 ```python
 import numpy as np
-from bacnpe import ARG, ClonalTree, ClonalOrigin_seq_sim, add_mutation
+from bacnpe import ARG, ClonalTree, ClonalOrigin_seq_sim, add_mutation, segment_summary_stats
 from bacnpe.summary_stats import STAT_NAMES
 
 np.random.seed(1)                      # simulations use NumPy's global random state
@@ -29,6 +29,7 @@ dict(zip(STAT_NAMES, stats))           # 30 named summary statistics
 # The two simulation steps can also be run separately:
 arg = ARG(tree, rho_site=0.02, L=200, delta=30.0)   # ARG with recombination
 node_site = add_mutation(arg, theta_site=0.05)       # bool, (n_nodes, L); first n rows are the leaves
+stats = segment_summary_stats(tree, node_site[:tree.n])  # 30 statistics from the leaf sequences
 ```
 
 | Argument     | Type  | Allowed values |
@@ -46,10 +47,11 @@ NumPy scalars (`np.int64`, `np.float32`, …) are accepted.
 
 ```
 bacnpe/
-├── __init__.py              public API: ClonalTree, ARG, add_mutation, ClonalOrigin_seq_sim
+├── __init__.py              public API: ClonalTree, ARG, add_mutation, ClonalOrigin_seq_sim,
+│                            segment_summary_stats
 ├── _validation.py           input checking shared by the entry points
 ├── tree/                    tree structures
-│   ├── base.py              _Tree (base class)
+│   ├── base.py              _Tree (base class, class name "Tree")
 │   └── clonal_genealogy.py  ClonalTree
 ├── simulation/              simulators
 │   ├── arg.py               ARG, recombination events, graph assembly
@@ -61,12 +63,12 @@ bacnpe/
     ├── homoplasy.py         homoplasy index (Fitch parsimony on the clonal tree)
     ├── wall.py              Wall's B and Q
     ├── regression.py        exponential decay fit of r² on distance
-    └── segment_stats.py     the 30-entry vector, STAT_NAMES
+    └── segment_stats.py     segment_summary_stats (the 30-entry vector), STAT_NAMES
 ```
 
-Everything except `ClonalTree`, `ARG`, `add_mutation` and
-`ClonalOrigin_seq_sim` is an internal
-helper (underscore prefix) and may change without notice.
+Everything except `ClonalTree`, `ARG`, `add_mutation`, `ClonalOrigin_seq_sim`,
+`segment_summary_stats` and `STAT_NAMES` is an internal helper (underscore
+prefix) and may change without notice.
 
 ## Tests
 

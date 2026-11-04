@@ -74,3 +74,14 @@ def test_wrong_type_raises_type_error(bad):
 def test_bad_value_raises_value_error(bad):
     with pytest.raises(ValueError):
         ClonalTree(bad)
+
+
+def test_class_names():
+    from bacnpe.tree.base import _Tree
+    tree = ClonalTree(4)
+    assert type(tree).__name__ == "ClonalTree" and repr(tree) == "ClonalTree(n=4)"
+    base = _Tree(3)
+    assert _Tree.__name__ == "Tree" and repr(base) == "Tree(n=3)"
+    # Creating a base tree must not rename its subclasses (and vice versa)
+    assert ClonalTree.__name__ == "ClonalTree"
+    assert type(ClonalTree(5)).__name__ == "ClonalTree" and _Tree.__name__ == "Tree"

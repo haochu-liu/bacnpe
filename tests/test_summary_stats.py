@@ -8,7 +8,7 @@ vectorised helpers agree exactly with straightforward per-pair loops
 import numpy as np
 import pytest
 
-from bacnpe import ClonalTree
+from bacnpe import ClonalTree, segment_summary_stats
 from bacnpe.summary_stats import (
     _exp_regression,
     _g4_test,
@@ -17,7 +17,6 @@ from bacnpe.summary_stats import (
     _kelly_z,
     _ld,
     _pairwise_ld_g4,
-    segment_summary_stats,
     _tajima_d,
     _tajima_pi,
     _wall_bq,
@@ -234,3 +233,11 @@ def test_exp_regression_recovers_parameters():
     y = 0.8 * np.exp(-0.1 * (x - 1)) + 0.05
     a, b, c = _exp_regression(x, y)
     assert (a, b, c) == pytest.approx((0.8, 0.1, 0.05), rel=1e-4)
+
+
+def test_segment_summary_stats_is_public():
+    import bacnpe
+    import bacnpe.summary_stats
+    assert "segment_summary_stats" in bacnpe.__all__
+    assert "segment_summary_stats" in bacnpe.summary_stats.__all__
+    assert bacnpe.segment_summary_stats is bacnpe.summary_stats.segment_summary_stats

@@ -21,7 +21,9 @@ class _Tree:
         self.n: int = n
         self.edge: Optional[np.ndarray] = None
         self.node_height: Optional[np.ndarray] = None
-        self.__class__.__name__ = "Tree"
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(n={self.n})"
+        return f"{type(self).__name__}(n={self.n})"
+
+
+_Tree.__name__ = "Tree"
