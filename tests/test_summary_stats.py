@@ -17,7 +17,7 @@ from bacnpe.summary_stats import (
     _kelly_z,
     _ld,
     _pairwise_ld_g4,
-    _segment_summary_stats,
+    segment_summary_stats,
     _tajima_d,
     _tajima_pi,
     _wall_bq,
@@ -206,25 +206,25 @@ def test_homoplasy_index_compatible_and_homoplastic_sites():
 def test_segment_summary_stats_output():
     tree = ClonalTree(8)
     mat = random_matrix(8, 50, p=0.2, seed=1)
-    s = _segment_summary_stats(tree, mat)
+    s = segment_summary_stats(tree, mat)
     assert s.shape == (30,) and s.dtype == np.float64
     assert s[29] == 50
     # 0/1 integer input gives the same result as boolean input
-    np.testing.assert_array_equal(s, _segment_summary_stats(tree, mat.astype(int)))
+    np.testing.assert_array_equal(s, segment_summary_stats(tree, mat.astype(int)))
 
 
 def test_segment_summary_stats_bad_inputs():
     tree = ClonalTree(8)
     with pytest.raises(ValueError):
-        _segment_summary_stats(tree, np.zeros((7, 10), dtype=bool))  # wrong #rows
+        segment_summary_stats(tree, np.zeros((7, 10), dtype=bool))  # wrong #rows
     with pytest.raises(ValueError):
-        _segment_summary_stats(tree, np.full((8, 10), 2))  # not binary
+        segment_summary_stats(tree, np.full((8, 10), 2))  # not binary
     with pytest.raises(ValueError):
-        _segment_summary_stats(tree, np.zeros(8, dtype=bool))  # not 2-D
+        segment_summary_stats(tree, np.zeros(8, dtype=bool))  # not 2-D
     with pytest.raises(TypeError):
-        _segment_summary_stats(tree, np.full((8, 10), "a"))
+        segment_summary_stats(tree, np.full((8, 10), "a"))
     with pytest.raises(TypeError):
-        _segment_summary_stats("tree", np.zeros((8, 10), dtype=bool))
+        segment_summary_stats("tree", np.zeros((8, 10), dtype=bool))
 
 
 # ----------------------------------------------------------------- regression

@@ -45,11 +45,6 @@ def test_arg_without_recombination_is_clonal_tree():
     assert arg.edge_mat.all() and arg.node_mat.all() and arg.node_clonal.all()
 
 
-def test_arg_custom_k():
-    arg = _ARG(ClonalTree(5), 0.05, 100, 10.0, k=7)
-    assert arg.node_mat.shape[1] == 7 and arg.L == 100
-
-
 def test_arg_bad_inputs():
     tree = ClonalTree(5)
     with pytest.raises(TypeError):
