@@ -29,7 +29,7 @@ from ..tree.base import _Tree
 from ..tree.clonal_genealogy import ClonalTree
 
 
-class _ARG(_Tree):
+class ARG(_Tree):
     """
     An approximated ancestral recombination graph (ARG) using ClonalOrigin algorithm.
 
@@ -348,7 +348,7 @@ def _build_arg_graph(clonal_edge: np.ndarray, clonal_node_height: np.ndarray,
     -------
     tuple of np.ndarray
         ``(edge, edge_mat, node_height, node_mat, node_clonal)`` as described
-        in :class:`_ARG`.
+        in :class:`ARG`.
     """
     n_recomb = recomb_edge.shape[0]
     node_max = 2 * n - 1 + 3 * n_recomb

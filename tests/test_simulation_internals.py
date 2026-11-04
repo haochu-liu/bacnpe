@@ -1,15 +1,15 @@
-"""Tests for the internal ARG and mutation simulators."""
+"""Tests for the ARG and mutation simulators."""
 import numpy as np
 import pytest
 
-from bacnpe import ClonalTree
-from bacnpe.simulation import _ARG, _add_mutation, _clonal_origin_nodes
+from bacnpe import ARG, ClonalTree, add_mutation
+from bacnpe.simulation import _clonal_origin_nodes
 
 
 @pytest.mark.parametrize("rho", [0.0, 0.02, 0.2])
 @pytest.mark.parametrize("n, L, delta", [(3, 5, 1.0), (10, 100, 20.0), (25, 40, 3.0)])
 def test_arg_structure(n, L, delta, rho):
-    arg = _ARG(ClonalTree(n), rho, L, delta)
+    arg = ARG(ClonalTree(n), rho, L, delta)
     n_edges, n_nodes = arg.edge.shape[0], arg.node_height.shape[0]
 
     # Sizes: every recombination adds 3 nodes and 4 edges
@@ -39,7 +39,7 @@ def test_arg_structure(n, L, delta, rho):
 
 def test_arg_without_recombination_is_clonal_tree():
     tree = ClonalTree(8)
-    arg = _ARG(tree, 0.0, 30, 5.0)
+    arg = ARG(tree, 0.0, 30, 5.0)
     np.testing.assert_array_equal(arg.edge, tree.edge)
     np.testing.assert_array_equal(arg.node_height, tree.node_height)
     assert arg.edge_mat.all() and arg.node_mat.all() and arg.node_clonal.all()
@@ -48,20 +48,20 @@ def test_arg_without_recombination_is_clonal_tree():
 def test_arg_bad_inputs():
     tree = ClonalTree(5)
     with pytest.raises(TypeError):
-        _ARG("not a tree", 0.1, 10, 2.0)
+        ARG("not a tree", 0.1, 10, 2.0)
     with pytest.raises(TypeError):
-        _ARG(tree, 0.1, 10.0, 2.0)
+        ARG(tree, 0.1, 10.0, 2.0)
     with pytest.raises(ValueError):
-        _ARG(tree, 0.1, 10, 0.5)
+        ARG(tree, 0.1, 10, 0.5)
     with pytest.raises(ValueError):
-        _ARG(tree, -0.1, 10, 2.0)
+        ARG(tree, -0.1, 10, 2.0)
 
 
 @pytest.mark.parametrize("theta", [0.0, 0.01, 0.5])
 def test_add_mutation_output(theta):
     n, L = 10, 60
-    arg = _ARG(ClonalTree(n), 0.05, L, 10.0)
-    node_site = _add_mutation(arg, theta)
+    arg = ARG(ClonalTree(n), 0.05, L, 10.0)
+    node_site = add_mutation(arg, theta)
     assert isinstance(node_site, np.ndarray)
     assert node_site.dtype == bool
     assert node_site.shape == (arg.node_height.shape[0], L)
@@ -81,3 +81,26 @@ def test_clonal_origin_nodes_sorted_by_height():
     np.testing.assert_array_equal(_clonal_origin_nodes(recomb_edge, 1), [3, -1, 2])
     np.testing.assert_array_equal(_clonal_origin_nodes(recomb_edge, 2), [-2, 1])
     assert _clonal_origin_nodes(recomb_edge, 5).size == 0
+
+
+def test_public_api_exports():
+    import bacnpe
+    import bacnpe.simulation
+    for name in ("ARG", "add_mutation"):
+        assert name in bacnpe.__all__ and name in bacnpe.simulation.__all__
+    assert bacnpe.ARG is bacnpe.simulation.ARG
+    assert bacnpe.add_mutation is bacnpe.simulation.add_mutation
+
+
+def test_add_mutation_bad_inputs():
+    arg = ARG(ClonalTree(5), 0.1, 10, 2.0)
+    with pytest.raises(TypeError):
+        add_mutation("not an arg", 0.1)
+    with pytest.raises(TypeError):
+        add_mutation(ClonalTree(5), 0.1)
+    with pytest.raises(TypeError):
+        add_mutation(arg, "0.1")
+    with pytest.raises(ValueError):
+        add_mutation(arg, -0.1)
+    with pytest.raises(ValueError):
+        add_mutation(arg, float("nan"))

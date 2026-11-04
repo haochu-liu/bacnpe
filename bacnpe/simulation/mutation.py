@@ -3,10 +3,11 @@ from __future__ import annotations
 
 import numpy as np
 
-from .arg import _ARG
+from .._validation import _check_real
+from .arg import ARG
 
 
-def _add_mutation(arg: _ARG, theta_site: float) -> np.ndarray:
+def add_mutation(arg: ARG, theta_site: float) -> np.ndarray:
     """
     Add mutations uniformly onto the edges of ARG with infinite site assumption.
 
@@ -19,7 +20,7 @@ def _add_mutation(arg: _ARG, theta_site: float) -> np.ndarray:
 
     Parameters
     ----------
-    arg : _ARG
+    arg : ARG
         An ARG object to add mutations to.
     theta_site : float
         The mutation rate per site.
@@ -28,7 +29,18 @@ def _add_mutation(arg: _ARG, theta_site: float) -> np.ndarray:
     -------
     node_site : np.ndarray, shape (n_nodes, L), dtype bool
         Node-site incidence matrix (allelic state of every node at every site).
+
+    Raises
+    ------
+    TypeError
+        If `arg` is not an ARG or `theta_site` is not a real number.
+    ValueError
+        If `theta_site` is negative, NaN or infinite.
     """
+    if not isinstance(arg, ARG):
+        raise TypeError("`arg` must be of class 'ARG'.")
+    theta_site = _check_real(theta_site, "theta_site", minimum=0.0)
+
     n_nodes, n_sites = arg.node_mat.shape
     theta = theta_site * n_sites
     n_mutations = np.random.poisson(theta * arg.length / 2)

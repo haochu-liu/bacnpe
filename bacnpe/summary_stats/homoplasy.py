@@ -20,7 +20,7 @@ def _homoplasy_index(tree: ClonalTree, node_site: np.ndarray) -> float:
     tree : ClonalTree
         A clonal tree object representing the clonal genealogy for the ARG.
     node_site : np.ndarray
-        Node-site incidence matrix (boolean), typically from _add_mutation().
+        Node-site incidence matrix (boolean), typically from add_mutation().
         Shape: (n_nodes, n_sites); only the first ``tree.n`` rows (the leaves)
         are used.
 

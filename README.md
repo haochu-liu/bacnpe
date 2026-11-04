@@ -17,7 +17,7 @@ Requires Python ≥ 3.9, NumPy, SciPy and pandas.
 
 ```python
 import numpy as np
-from bacnpe import ClonalTree, ClonalOrigin_seq_sim
+from bacnpe import ARG, ClonalTree, ClonalOrigin_seq_sim, add_mutation
 from bacnpe.summary_stats import STAT_NAMES
 
 np.random.seed(1)                      # simulations use NumPy's global random state
@@ -25,6 +25,10 @@ tree = ClonalTree(20)                  # clonal genealogy with 20 leaves
 stats = ClonalOrigin_seq_sim(tree, rho_site=0.02, theta_site=0.05, L=200, delta=30.0)
 
 dict(zip(STAT_NAMES, stats))           # 30 named summary statistics
+
+# The two simulation steps can also be run separately:
+arg = ARG(tree, rho_site=0.02, L=200, delta=30.0)   # ARG with recombination
+node_site = add_mutation(arg, theta_site=0.05)       # bool, (n_nodes, L); first n rows are the leaves
 ```
 
 | Argument     | Type  | Allowed values |
@@ -42,14 +46,14 @@ NumPy scalars (`np.int64`, `np.float32`, …) are accepted.
 
 ```
 bacnpe/
-├── __init__.py              public API: ClonalTree, ClonalOrigin_seq_sim
+├── __init__.py              public API: ClonalTree, ARG, add_mutation, ClonalOrigin_seq_sim
 ├── _validation.py           input checking shared by the entry points
 ├── tree/                    tree structures
 │   ├── base.py              _Tree (base class)
 │   └── clonal_genealogy.py  ClonalTree
 ├── simulation/              simulators
-│   ├── arg.py               _ARG, recombination events, graph assembly
-│   ├── mutation.py          _add_mutation
+│   ├── arg.py               ARG, recombination events, graph assembly
+│   ├── mutation.py          add_mutation
 │   └── seq_sim.py           ClonalOrigin_seq_sim
 └── summary_stats/           summary statistics
     ├── linkage.py           LD (D, D', r²), four-gamete test, Hudson's Rm, Kelly's ZnS
@@ -60,7 +64,8 @@ bacnpe/
     └── segment_stats.py     the 30-entry vector, STAT_NAMES
 ```
 
-Everything except `ClonalTree` and `ClonalOrigin_seq_sim` is an internal
+Everything except `ClonalTree`, `ARG`, `add_mutation` and
+`ClonalOrigin_seq_sim` is an internal
 helper (underscore prefix) and may change without notice.
 
 ## Tests

@@ -6,8 +6,8 @@ import numpy as np
 from .._validation import _check_integer, _check_real
 from ..summary_stats.segment_stats import segment_summary_stats
 from ..tree.clonal_genealogy import ClonalTree
-from .arg import _ARG
-from .mutation import _add_mutation
+from .arg import ARG
+from .mutation import add_mutation
 
 
 def ClonalOrigin_seq_sim(tree: ClonalTree, rho_site: float, theta_site: float,
@@ -81,8 +81,8 @@ def ClonalOrigin_seq_sim(tree: ClonalTree, rho_site: float, theta_site: float,
     tree_width = tree.n
 
     # Simulate ARG and add mutations
-    ARG_sim = _ARG(tree, rho_site, L, delta)
-    node_site = _add_mutation(ARG_sim, theta_site)
+    ARG_sim = ARG(tree, rho_site, L, delta)
+    node_site = add_mutation(ARG_sim, theta_site)
     # Polarise the leaf sequences relative to the first sequence
     mat = node_site[:tree_width, :] != node_site[0]
 
