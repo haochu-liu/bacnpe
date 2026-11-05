@@ -16,6 +16,8 @@ dependencies = [
     "torch>=2.5",                # tested with 2.5.1 and 2.15.0
     "sbi>=0.26",                 # tested with 0.26.1 and 0.27.0
     "six",                       # imported by sbi.analysis (plot_summary, ...) but not declared by sbi 0.27
+    "matplotlib>=3.5",           # bacnpe.detection plots
+    "openpyxl>=3.0",             # Excel export in bacnpe.detection.save_hotspot_tables
 ]
 
 [project.optional-dependencies]

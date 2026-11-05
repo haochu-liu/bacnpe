@@ -11,8 +11,9 @@ mutation rates.
 pip install .            # or: pip install -e ".[test]" for development
 ```
 
-Requires Python ≥ 3.10, NumPy, SciPy, pandas, tqdm, PyTorch and sbi (plus
-`six`, which `sbi.analysis` imports without declaring it).
+Requires Python ≥ 3.10, NumPy, SciPy, pandas, tqdm, PyTorch, sbi,
+matplotlib and openpyxl. It also needs `six`, which `sbi.analysis` imports
+without declaring it.
 
 ## Usage
 
@@ -104,6 +105,42 @@ posterior = load_npe("sims/ecoli/trained_npe_posterior.pt")["posterior"]   # sbi
 - `load_npe` also reads checkpoints saved by the old notebooks, without the
   `pysimARG` folder. It unpickles Python objects, so only load files you trust.
 
+### Detecting hotspots
+
+`bacnpe.detection` finds regions where a gene-level rate is locally
+elevated. It uses a Difference-of-Gaussians (DoG) filter on a circular
+chromosome: a narrow Gaussian smoother of the log rates minus a broad one,
+applied to every posterior draw.
+
+```python
+from bacnpe.detection import detect_hotspots, save_hotspot_tables
+
+# theta_post: (n_genes, n_samples, 3) posterior samples; genes need not be sorted
+recomb = detect_hotspots(gene_starts, theta_post[:, :, 0], chromosome_length_bp=5_227_440,
+                         gene_ends=gene_ends, min_fold_enrichment=1.5)
+mutate = detect_hotspots(gene_starts, theta_post[:, :, 1], chromosome_length_bp=5_227_440,
+                         gene_ends=gene_ends, min_fold_enrichment=1.5)
+
+print(recomb.summary())                                   # segment report
+recomb.plot(rate_label="Recombination rate",
+            title_text="B. cereus Recombination Rate with Detected Candidate Hotspots",
+            save_path="bacillus_local_recomb_dog.pdf")
+gene_info.iloc[recomb.segment_gene_indices()[0]]          # genes in the first hotspot
+
+save_hotspot_tables({"Recombination": recomb.to_dataframe(),
+                     "Mutation": mutate.to_dataframe()}, "bacillus_hotspots.xlsx")
+```
+
+- **Defaults:** the notebook values. Bandwidths are 10 kb (narrow) and 1 Mb
+  (broad), the probability threshold is 0.9, segments are merged across gaps
+  up to `max_gap_bp=800_000`, and `random_state=10`.
+- **Positions:** genes are placed at their start positions.
+- **Non-positive samples** are replaced by machine epsilon before taking logs.
+- **`to_dataframe()`** has one row per hotspot. Its `end_position_bp` is
+  the end of the segment's last gene.
+- **Saving:** `save_hotspot_tables` writes an Excel workbook (one sheet per
+  table) when the path ends in `.xlsx`, and otherwise a folder of CSV files.
+
 | Argument     | Type  | Allowed values |
 |--------------|-------|----------------|
 | `n` (tree)   | int   | ≥ 1 (≥ 3 for `ClonalOrigin_seq_sim`) |
@@ -123,6 +160,10 @@ bacnpe/
 │                            segment_summary_stats, parallel_sim
 ├── parallel.py              parallel_sim: prior draws + parallel simulations to CSV
 ├── _validation.py           input checking shared by the entry points
+├── detection/               hotspot detection from per-gene posteriors
+│   ├── dog.py               detect_hotspots, DoGHotspotDetector, DoGHotspotResult
+│   ├── plot.py              plot_dog_hotspots (three-panel figure)
+│   └── export.py            save_hotspot_tables (Excel / CSV)
 ├── npe/                     neural posterior estimation (needs torch + sbi)
 │   ├── prior.py             build_prior
 │   ├── distributions.py     DiscreteUniform (prior on L)
@@ -147,7 +188,7 @@ bacnpe/
 
 Everything except `ClonalTree`, `ARG`, `add_mutation`, `ClonalOrigin_seq_sim`,
 `parallel_sim`, `segment_summary_stats`, `STAT_NAMES` and the names in
-`bacnpe.npe.__all__` is an internal helper (underscore prefix) and may
+`bacnpe.npe.__all__` and `bacnpe.detection.__all__` is an internal helper (underscore prefix) and may
 change without notice.
 
 ## Tests

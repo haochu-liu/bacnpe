@@ -95,3 +95,44 @@ The minimum Python version is now 3.10, because sbi requires it.
     without `pysimARG`. The bacillus checkpoint was checked to give
     identical samples.
   - `load_npe` warns when the sbi version differs.
+
+## Hotspot detection (`bacnpe/detection/`)
+
+Replaces `pysimARG/hotspot_DoG.py` and the "Plot bar plots by position"
+section of `hotspots_bacillus.ipynb`, `hotspots_ecoli.ipynb`,
+`hotspots_klebsiella.ipynb` and `hotspots_staph.ipynb`.
+
+- **Same results:** the detector's numerical code is unchanged. On synthetic
+  genomes, `detect_hotspots` gives bit-for-bit the same per-gene arrays,
+  segments and hotspot table as the notebook cells using `hotspot_DoG.py`.
+  The cases checked include unsorted genes, negative posterior samples,
+  subsampled draws and a hotspot that wraps around the origin.
+- **`detect_hotspots(gene_starts, posterior_samples, chromosome_length_bp,
+  gene_ends=...)`** replaces each notebook cell. The notebooks sorted genes
+  first, transposed the samples, clipped values `<= 0` to machine epsilon and
+  built the detector. Genes no longer need to be sorted, and the input array
+  is not modified. Defaults are the notebook values (10 kb / 1 Mb, threshold
+  0.9, `random_state=10`, `max_gap_bp=800_000`).
+- **`max_gap_bp`** can be set once on the detector. `segments`,
+  `to_dataframe` and `plot` use it unless told otherwise. Before, it had to
+  be repeated in every call (four times per notebook cell).
+- **`result.to_dataframe()`** replaces the per-row `pd.DataFrame` filling.
+  - Columns have proper dtypes instead of `object`.
+  - Two columns are added: `median_probability` and `wraps_origin`.
+  - `end_position_bp` is the gene end of the last gene, as in the notebooks.
+    It is looked up through `sort_order`, so it is correct whatever the input
+    order.
+  - In `hotspots_bacillus.ipynb` the mutation table was created but never
+    filled, so its Excel sheet would have been empty.
+- **`result.summary()`** returns the segment report the notebooks printed.
+- **`result.segment_gene_indices()`** gives the input-order indices of the
+  genes in each hotspot, replacing the manual `gene_info` slicing in
+  `hotspots_staph.ipynb`.
+- **`save_hotspot_tables`** replaces the commented-out `pd.ExcelWriter`
+  block. It writes `.xlsx` (one sheet per table) or a folder of CSV files,
+  and does not overwrite existing files unless `overwrite=True`.
+- **Plot:** `result.plot(...)` / `plot_dog_hotspots(result, ...)` draw the
+  same figure as before.
+- **Input checks:** inputs are checked for type as well as value. For
+  example, a string bandwidth raises `TypeError`.
+- **Dependencies:** `matplotlib` and `openpyxl` (for Excel) are now required.
