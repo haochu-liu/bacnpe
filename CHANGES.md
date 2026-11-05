@@ -42,3 +42,54 @@ Differences from that script:
   files raise `FileExistsError` unless `overwrite=True`.
 - **Progress bar:** `tqdm` is a required dependency. The bar is shown by
   default and turned off with `progress=False`.
+
+- `_check_range` moved to `bacnpe/_validation.py`, so that `parallel_sim`
+  and `bacnpe.npe.build_prior` share it.
+
+## NPE (`bacnpe/npe/`)
+
+Replaces `pysimARG/discrete_uniform.py`, `pysimARG/LeaveLengthOut_NN.py` and
+these notebook sections in `local_recomb_mutate_bacillus.ipynb` and
+`local_recomb_mutate_ClonalOrigin.ipynb`: "Create prior to pass range
+knowledge to NPE", "Using all simulations" and "Save the trained NPE".
+torch and sbi are an optional extra (`pip install ".[npe]"`).
+
+- **Prior:** `build_prior(rho_range, theta_range, L_range)` takes the same
+  ranges as `parallel_sim`. The notebooks built a prior but never passed it
+  to `NPE_C`, so sbi used an empirical prior instead (the saved checkpoints
+  contain `ImproperEmpirical`). `train_npe` passes the prior. Training is
+  unchanged, but posterior samples outside the prior are now rejected by
+  default.
+- **Optional prior and embedding:** `train_npe(theta, x, prior=None,
+  embedding_net=None)`. With no embedding network, the flow is conditioned
+  on the full z-scored `x`. To get the notebook setup, pass
+  `LeaveLengthOut_NN(30, 128, 1, 2)`.
+- **Seeds:** `train_npe(seed=...)` seeds torch and NumPy before building and
+  training the flow. It restores the caller's random states afterwards.
+  An embedding network passed in is initialised when you create it, so seed
+  before creating it. The notebooks created it before `torch.manual_seed`,
+  so its starting weights were not reproducible.
+- **Invalid simulations:** `train_npe` drops rows with NaN/inf and records
+  how many in `settings["n_dropped"]`. The ClonalOrigin notebook did this
+  by hand. The bacillus notebook relied on sbi doing it silently.
+- **Column drop:** the notebooks deleted columns 16–31 from older 46-column
+  simulation files. `parallel_sim` writes the 30 columns directly, so there
+  is nothing to delete.
+- **`DiscreteUniform`:**
+  - Bounds are checked: integer-valued, `low <= high`.
+  - Sampling uses each element's own bounds. Before, batched bounds used the
+    overall min and max.
+  - `log_prob` works on any device.
+  - Values between integers still count as inside the support, because NPE
+    treats `L` as continuous.
+- **`LeaveLengthOut_NN`:** behaviour and attribute names are unchanged; the
+  docstring is corrected.
+- **Checkpoints:**
+  - `save_npe` stores the posterior, the training settings, and the sbi,
+    torch and bacnpe versions. It does not overwrite an existing file unless
+    `overwrite=True`. `checkpoint["posterior"]` works as before.
+  - `load_npe` maps the old module names (`LeaveLengthOut_NN`,
+    `discrete_uniform`) to `bacnpe.npe`. Old checkpoints therefore load
+    without `pysimARG`. The bacillus checkpoint was checked to give
+    identical samples.
+  - `load_npe` warns when the sbi version differs.

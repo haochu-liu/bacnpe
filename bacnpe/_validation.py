@@ -14,7 +14,8 @@ from __future__ import annotations
 
 import math
 import numbers
-from typing import Optional
+from collections.abc import Iterable
+from typing import Optional, Tuple
 
 import numpy as np
 
@@ -104,3 +105,18 @@ def _check_binary_matrix(mat, name: str = "mat") -> np.ndarray:
     if not np.all((arr == 0) | (arr == 1)):
         raise ValueError(f"`{name}` must contain only 0/1 (or True/False) values.")
     return arr.astype(bool)
+
+
+def _check_range(value, name: str, minimum: float, integer: bool = False) -> Tuple:
+    """Validate a prior range ``(low, high)`` with ``minimum <= low <= high``."""
+    if isinstance(value, (str, bytes)) or not isinstance(value, Iterable):
+        raise TypeError(f"`{name}` must be a pair (low, high), got {type(value).__name__}.")
+    value = tuple(value)
+    if len(value) != 2:
+        raise ValueError(f"`{name}` must be a pair (low, high), got {len(value)} value(s).")
+    check = _check_integer if integer else _check_real
+    low = check(value[0], f"{name}[0]", minimum=minimum)
+    high = check(value[1], f"{name}[1]", minimum=minimum)
+    if low > high:
+        raise ValueError(f"`{name}` must satisfy low <= high, got ({low}, {high}).")
+    return low, high

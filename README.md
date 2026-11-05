@@ -9,6 +9,7 @@ mutation rates.
 
 ```bash
 pip install .            # or: pip install -e ".[test]" for development
+pip install ".[npe]"     # PyTorch + sbi, needed for bacnpe.npe
 ```
 
 Requires Python ≥ 3.9, NumPy, SciPy, pandas and tqdm.
@@ -61,6 +62,48 @@ if __name__ == "__main__":             # required on Windows/macOS when max_work
 - Both files start with `#` comment lines giving the column names and seed.
   `np.loadtxt(path, delimiter=",")` skips them.
 
+### Training NPE
+
+`bacnpe.npe` trains sbi's `NPE_C` on the output of `parallel_sim`.
+It needs the `npe` extra. `import bacnpe` alone does not load torch.
+
+```python
+import numpy as np
+import torch
+from bacnpe.npe import LeaveLengthOut_NN, build_prior, train_npe, save_npe, load_npe
+
+theta = np.loadtxt("sims/ecoli/params.csv", delimiter=",")   # (n_sims, 3)
+x = np.loadtxt("sims/ecoli/stats.csv", delimiter=",")        # (n_sims, 30)
+
+prior = build_prior(rho_range=(0, 0.2), theta_range=(0, 0.1), L_range=(400, 10000))
+result = train_npe(theta, x, prior, seed=100)    # no embedding: flow conditioned on all 30 statistics
+
+# Notebook setting: LeaveLengthOut_NN embedding (create it after seeding for reproducible weights)
+torch.manual_seed(100)
+embedding = LeaveLengthOut_NN(input_dim=30, num_hiddens=128, num_hidden_layers=1, num_outputs=2)
+result = train_npe(theta, x, prior, embedding_net=embedding, seed=100)
+
+# Training and validation losses
+from sbi.analysis import plot_summary
+plot_summary(result.inference, tags=["training_loss", "validation_loss"], figsize=(8, 4))
+
+save_npe(result, "sims/ecoli/trained_npe_posterior.pt")
+
+posterior = load_npe("sims/ecoli/trained_npe_posterior.pt")["posterior"]   # sbi DirectPosterior
+```
+
+- Use the same ranges in `build_prior` as in `parallel_sim`.
+- `train_npe` drops simulations with NaN/inf statistics first. The number
+  dropped is in `result.settings["n_dropped"]`.
+- `prior` and `embedding_net` may be `None`. The flow and training settings
+  default to the notebook values. All settings are stored in the checkpoint
+  with the sbi, torch and bacnpe versions.
+- `plot_summary` reads the TensorBoard logs that sbi writes to `sbi-logs/`
+  in the working directory. The losses are also in
+  `result.inference.summary["training_loss"]` and `["validation_loss"]`.
+- `load_npe` also reads checkpoints saved by the old notebooks, without the
+  `pysimARG` folder. It unpickles Python objects, so only load files you trust.
+
 | Argument     | Type  | Allowed values |
 |--------------|-------|----------------|
 | `n` (tree)   | int   | ≥ 1 (≥ 3 for `ClonalOrigin_seq_sim`) |
@@ -80,6 +123,12 @@ bacnpe/
 │                            segment_summary_stats, parallel_sim
 ├── parallel.py              parallel_sim: prior draws + parallel simulations to CSV
 ├── _validation.py           input checking shared by the entry points
+├── npe/                     neural posterior estimation (needs torch + sbi)
+│   ├── prior.py             build_prior
+│   ├── distributions.py     DiscreteUniform (prior on L)
+│   ├── embedding.py         LeaveLengthOut_NN (embedding network)
+│   ├── train.py             train_npe, NPEResult, build_density_estimator
+│   └── checkpoint.py        save_npe, load_npe
 ├── tree/                    tree structures
 │   ├── base.py              _Tree (base class, class name "Tree")
 │   └── clonal_genealogy.py  ClonalTree
@@ -97,8 +146,9 @@ bacnpe/
 ```
 
 Everything except `ClonalTree`, `ARG`, `add_mutation`, `ClonalOrigin_seq_sim`,
-`parallel_sim`, `segment_summary_stats` and `STAT_NAMES` is an internal helper (underscore
-prefix) and may change without notice.
+`parallel_sim`, `segment_summary_stats`, `STAT_NAMES` and the names in
+`bacnpe.npe.__all__` is an internal helper (underscore prefix) and may
+change without notice.
 
 ## Tests
 
@@ -109,5 +159,6 @@ pytest
 The suite checks output types, shapes and value ranges, the handling of
 unpermitted inputs, the internal helpers on hand-made examples, and
 "golden" vectors produced by the original implementation with fixed seeds.
+`tests/test_npe.py` is skipped when torch or sbi is not installed.
 
 See `CHANGES.md` for what changed relative to the original scripts.

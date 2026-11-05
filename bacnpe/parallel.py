@@ -17,7 +17,6 @@ guard the call with ``if __name__ == "__main__":``.
 from __future__ import annotations
 
 import os
-from collections.abc import Iterable
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
 from pathlib import Path
@@ -26,7 +25,7 @@ from typing import Optional, Tuple, Union
 import numpy as np
 from tqdm.auto import tqdm
 
-from ._validation import _check_integer, _check_real
+from ._validation import _check_integer, _check_range, _check_real
 from .simulation.seq_sim import ClonalOrigin_seq_sim
 from .summary_stats.segment_stats import STAT_NAMES
 from .tree.clonal_genealogy import ClonalTree
@@ -36,21 +35,6 @@ PARAM_NAMES = ["rho_site", "theta_site", "L"]
 
 PARAMS_FILE = "params.csv"
 STATS_FILE = "stats.csv"
-
-
-def _check_range(value, name: str, minimum: float, integer: bool = False) -> Tuple:
-    """Validate a prior range ``(low, high)`` with ``minimum <= low <= high``."""
-    if isinstance(value, (str, bytes)) or not isinstance(value, Iterable):
-        raise TypeError(f"`{name}` must be a pair (low, high), got {type(value).__name__}.")
-    value = tuple(value)
-    if len(value) != 2:
-        raise ValueError(f"`{name}` must be a pair (low, high), got {len(value)} value(s).")
-    check = _check_integer if integer else _check_real
-    low = check(value[0], f"{name}[0]", minimum=minimum)
-    high = check(value[1], f"{name}[1]", minimum=minimum)
-    if low > high:
-        raise ValueError(f"`{name}` must satisfy low <= high, got ({low}, {high}).")
-    return low, high
 
 
 def _simulate_one(task: Tuple[float, float, int, int], tree: ClonalTree,
