@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bacnpe"
-version = "0.2.0"
+version = "0.3.0"
 description = "Detection of local recombination and mutation hotspots using NPE with ClonalOrigin simulations."
 readme = "README.md"
 authors = [
