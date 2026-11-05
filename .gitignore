@@ -219,3 +219,6 @@ __marimo__/
 
 # sbi / TensorBoard training logs
 sbi-logs/
+
+# Results written by the examples
+examples/output/

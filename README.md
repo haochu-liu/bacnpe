@@ -102,6 +102,10 @@ z = ClonalOrigin_seq_sim(tree, rho_site=0.02, theta_site=0.05, L=2000, delta=300
 dict(zip(STAT_NAMES, z))               # 29 summary statistics + the length L
 ```
 
+The [`examples`](examples/README.md) folder has runnable scripts and a
+notebook that repeats the *E. coli* analysis of the paper, from training
+NPE to hotspot detection.
+
 ## Workflow
 
 The steps below follow the analyses of the paper. The comments show the
