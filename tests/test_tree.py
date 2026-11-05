@@ -59,7 +59,8 @@ def test_reproducible_with_seed():
 def test_to_dict_and_repr():
     tree = ClonalTree(4)
     d = tree.to_dict()
-    assert set(d) == {"edge", "node_height", "height", "length", "n"}
+    assert set(d) == {"edge", "node_height", "height", "length", "n", "tip_labels"}
+    assert d["tip_labels"] is None
     assert d["n"] == 4
     assert repr(tree) == "ClonalTree(n=4)"
 

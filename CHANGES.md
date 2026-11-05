@@ -17,6 +17,46 @@
   `bacnpe` and from `bacnpe.summary_stats`, and it is listed in both
   `__all__` lists.
 
+## Estimated clonal trees (`bacnpe/tree/`)
+
+- **Loading without simulating:** `ClonalTree.from_newick`, `from_csv` and
+  `from_arrays` build a tree directly. Before, `example.py` simulated a
+  `ClonalTree(n=27)` and then overwrote `edge`, `node_height`, `height` and
+  `length`. The arrays are checked: binary tree, leaves at height 0,
+  internal nodes numbered by height, edge lengths equal to height
+  differences. Edges are sorted by parent. Simulations on a loaded tree
+  are identical to those on the overwritten tree.
+- **No R needed:** `from_newick` ports `R/simARG/*_clonal_tree.R`:
+  - `ape::read.tree`;
+  - `ape::cophenetic.phylo`;
+  - `phangorn::upgma`, which is `hclust(method = "average")` +
+    `as.phylo`;
+  - the rescaling, renumbering and sorting.
+
+  Arithmetic and tie-breaking follow R. On the klebsiella, ecoli and staph
+  ClonalFrameML trees and the SimBac tree, topology and node numbering are
+  identical to the R CSV files, and lengths agree to within 5e-15.
+- **Root scaling:** the R scripts rescale the standardized (UPGMA) tree t2
+  by `e = dist.nodes(t2)[Ntip(t2), 1] / 2`. On t2 this is half the
+  distance between tips 1 and n, i.e. the height of their common ancestor
+  in t2. That ancestor is the root of t2 only when the two tips lie on
+  opposite sides of it. The R CSV files confirm this: the node with height
+  `2(1 - 1/n)` is always the common ancestor of tips 1 and n.
+  - ecoli and SimBac: it is the root.
+  - klebsiella: it is not, so the root height is 2.246 instead of 1.98.
+  - staph: it is not, so the root height is 4.313 instead of 1.982.
+
+  `from_newick` scales the root of t2 to `2(1 - 1/n)`, which the R comment
+  `#current root height` suggests was intended. `r_compatible=True`
+  reproduces the R trees.
+- **`root_height`** can be set to another height, or to `None` to keep the
+  UPGMA heights.
+- **Tip names:** stored on the tree as `tip_labels` (None for simulated
+  trees), and included in `to_dict()`.
+- **Saving:** `to_csv(directory)` writes the files of the R scripts
+  (`clonal_edge.csv`, `clonal_node_height.csv`, `tip_names.csv`) at full
+  precision. `to_newick()` returns a Newick string.
+
 ## Parallel simulation (`bacnpe/parallel.py`)
 
 `parallel_sim(clonal_tree, rho_range, theta_range, L_range, delta, n_sims,

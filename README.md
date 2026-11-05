@@ -34,6 +34,33 @@ node_site = add_mutation(arg, theta_site=0.05)       # bool, (n_nodes, L); first
 stats = segment_summary_stats(tree, node_site[:tree.n])  # 30 statistics from the leaf sequences
 ```
 
+### Using an estimated clonal tree
+
+For real data, the clonal tree is estimated (e.g. by ClonalFrameML) instead
+of simulated. `ClonalTree.from_newick` makes the estimated tree ultrametric
+by UPGMA on its patristic distances and rescales the root to the coalescent
+expectation `2(1 - 1/n)`. This is a Python port of
+`likelihood-free/R/simARG/*_clonal_tree.R`, so R is not needed.
+
+```python
+from bacnpe import ClonalTree
+
+tree = ClonalTree.from_newick("data/klebsiella/cfml.nwk")   # ClonalFrameML output
+tree.tip_labels[:3]                    # leaf names, in Newick order (leaves 1..n)
+tree.to_csv("data/klebsiella")         # clonal_edge.csv, clonal_node_height.csv, tip_names.csv
+
+tree = ClonalTree.from_csv("data/klebsiella")              # load a saved tree (also the old R output)
+tree = ClonalTree.from_arrays(edge, node_height)           # or from the arrays themselves
+```
+
+- `root_height=` sets another root height, or `None` keeps the UPGMA
+  heights (half the patristic distances, in substitutions per site).
+- `r_compatible=True` reproduces the old R output exactly. The R scripts
+  scaled so that the common ancestor of the first and last tip had height
+  `2(1 - 1/n)`. That node is the root for ecoli but not for klebsiella or
+  staph, whose R trees are 1.13× and 2.18× taller.
+- `tree.to_newick()` writes the clonal tree as Newick.
+
 ### Simulating a training set in parallel
 
 `parallel_sim` draws `rho_site`, `theta_site` and `L` from uniform
@@ -46,7 +73,7 @@ same simulation.
 from bacnpe import ClonalTree, parallel_sim
 
 if __name__ == "__main__":             # required on Windows/macOS when max_workers > 1
-    tree = ClonalTree(27)
+    tree = ClonalTree.from_newick("data/ecoli/cf.nwk")
     params_path, stats_path = parallel_sim(
         tree,
         rho_range=(0, 0.2), theta_range=(0, 0.1), L_range=(400, 10000),  # L: both ends included
@@ -172,7 +199,9 @@ bacnpe/
 │   └── checkpoint.py        save_npe, load_npe
 ├── tree/                    tree structures
 │   ├── base.py              _Tree (base class, class name "Tree")
-│   └── clonal_genealogy.py  ClonalTree
+│   ├── clonal_genealogy.py  ClonalTree (simulate, from_newick/from_csv/from_arrays, to_csv/to_newick)
+│   ├── newick.py            Newick reader and writer
+│   └── upgma.py             ClonalFrameML tree -> clonal tree (port of the R scripts)
 ├── simulation/              simulators
 │   ├── arg.py               ARG, recombination events, graph assembly
 │   ├── mutation.py          add_mutation
