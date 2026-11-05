@@ -135,6 +135,20 @@ The minimum Python version is now 3.10, because sbi requires it.
     without `pysimARG`. The bacillus checkpoint was checked to give
     identical samples.
   - `load_npe` warns when the sbi version differs.
+- **Posterior samples for observed genes:**
+  `sample_posteriors(posterior, x_obs, num_samples=5000)` replaces the
+  per-gene `posterior.sample` loop of the `local_recomb_mutate_*`
+  notebooks.
+  - It returns `(n_genes, num_samples, 3)` floats, ready for
+    `detect_hotspots`.
+  - Rows with NaN/inf get NaN samples and a warning. Before, sbi raised an
+    error on them.
+  - `seed` gives reproducible draws without changing torch's global random
+    state.
+  - `reject_outside_prior` defaults to True, as in Algorithm 2 of the
+    paper. The bacillus and staph notebooks used False, which gave the
+    non-positive draws that `detect_hotspots` clips. The ecoli notebook
+    used True.
 
 ## Hotspot detection (`bacnpe/detection/`)
 
