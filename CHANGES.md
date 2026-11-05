@@ -52,7 +52,9 @@ Replaces `pysimARG/discrete_uniform.py`, `pysimARG/LeaveLengthOut_NN.py` and
 these notebook sections in `local_recomb_mutate_bacillus.ipynb` and
 `local_recomb_mutate_ClonalOrigin.ipynb`: "Create prior to pass range
 knowledge to NPE", "Using all simulations" and "Save the trained NPE".
-torch and sbi are an optional extra (`pip install ".[npe]"`).
+torch and sbi are required dependencies. So is `six`: `sbi.analysis` (for
+example `plot_summary`) imports it in sbi 0.27, but sbi does not declare it.
+The minimum Python version is now 3.10, because sbi requires it.
 
 - **Prior:** `build_prior(rho_range, theta_range, L_range)` takes the same
   ranges as `parallel_sim`. The notebooks built a prior but never passed it

@@ -9,10 +9,10 @@ mutation rates.
 
 ```bash
 pip install .            # or: pip install -e ".[test]" for development
-pip install ".[npe]"     # PyTorch + sbi, needed for bacnpe.npe
 ```
 
-Requires Python ≥ 3.9, NumPy, SciPy, pandas and tqdm.
+Requires Python ≥ 3.10, NumPy, SciPy, pandas, tqdm, PyTorch and sbi (plus
+`six`, which `sbi.analysis` imports without declaring it).
 
 ## Usage
 
@@ -65,7 +65,7 @@ if __name__ == "__main__":             # required on Windows/macOS when max_work
 ### Training NPE
 
 `bacnpe.npe` trains sbi's `NPE_C` on the output of `parallel_sim`.
-It needs the `npe` extra. `import bacnpe` alone does not load torch.
+`import bacnpe` alone does not load torch; it is loaded by `import bacnpe.npe`.
 
 ```python
 import numpy as np
@@ -159,6 +159,5 @@ pytest
 The suite checks output types, shapes and value ranges, the handling of
 unpermitted inputs, the internal helpers on hand-made examples, and
 "golden" vectors produced by the original implementation with fixed seeds.
-`tests/test_npe.py` is skipped when torch or sbi is not installed.
 
 See `CHANGES.md` for what changed relative to the original scripts.

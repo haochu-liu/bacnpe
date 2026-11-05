@@ -7,17 +7,19 @@ name = "bacnpe"
 version = "0.1.0"
 description = "Detection of local recombination and mutation hotspots using NPE with ClonalOrigin simulations."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"   # sbi needs Python >= 3.10
 dependencies = [
     "numpy>=1.21",
     "scipy>=1.7",
     "pandas>=1.3",
     "tqdm>=4",
+    "torch>=2.5",                # tested with 2.5.1 and 2.15.0
+    "sbi>=0.26",                 # tested with 0.26.1 and 0.27.0
+    "six",                       # imported by sbi.analysis (plot_summary, ...) but not declared by sbi 0.27
 ]
 
 [project.optional-dependencies]
 test = ["pytest>=7"]
-npe = ["torch>=2.0", "sbi>=0.26"]
 
 [tool.setuptools.packages.find]
 include = ["bacnpe*"]

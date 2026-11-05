@@ -1,39 +1,13 @@
-"""Tests for bacnpe.npe (skipped when torch / sbi are not installed)."""
+"""Tests for bacnpe.npe."""
 import math
-import sys
-import types
 import warnings
 
-import numpy as np
 import pytest
+import torch
 
-torch = pytest.importorskip("torch")
-pytest.importorskip("sbi")
-
-from bacnpe.npe import (  # noqa: E402
-    DiscreteUniform,
-    LeaveLengthOut_NN,
-    NPEResult,
-    build_prior,
-    load_npe,
-    save_npe,
-    train_npe,
-)
+from bacnpe.npe import DiscreteUniform, LeaveLengthOut_NN, build_prior
 
 RANGES = dict(rho_range=(0.0, 0.2), theta_range=(0.0, 0.1), L_range=(100, 10000))
-FAST = dict(max_num_epochs=2, training_batch_size=50, show_progress_bars=False)
-
-
-def _toy_data(n=300, seed=0):
-    """Cheap (theta, x) pairs: x depends on theta, last column of x is L."""
-    rng = np.random.default_rng(seed)
-    theta = np.column_stack([rng.uniform(0, 0.2, n), rng.uniform(0, 0.1, n),
-                             rng.integers(100, 10000, n, endpoint=True)])
-    x = rng.normal(size=(n, 30))
-    x[:, 0] += 10 * theta[:, 0]
-    x[:, 1] += 10 * theta[:, 1]
-    x[:, 29] = theta[:, 2]
-    return theta, x
 
 
 @pytest.fixture(autouse=True)

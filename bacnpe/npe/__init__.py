@@ -1,8 +1,8 @@
 """
 Neural posterior estimation (NPE) of (rho_site, theta_site, L) with sbi.
 
-Requires PyTorch and sbi (``pip install ".[npe]"``). ``import bacnpe`` does
-not import this subpackage, so the simulators work without them.
+Uses PyTorch and sbi. ``import bacnpe`` does not import this subpackage, so
+torch is only loaded when NPE is used.
 
 Public API
 ----------
