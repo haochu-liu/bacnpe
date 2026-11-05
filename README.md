@@ -39,13 +39,52 @@ The method has three steps:
 
 ## Installation
 
+bacnpe needs Python ≥ 3.10. pip installs the other dependencies:
+
+- NumPy, SciPy, pandas, tqdm;
+- PyTorch and sbi;
+- matplotlib, openpyxl and six.
+
+R is not needed.
+
+**1. Create a virtual environment (recommended).**
+
 ```bash
-pip install .            # or: pip install -e ".[test]" for development
+python -m venv bacnpe-env
+source bacnpe-env/bin/activate          # Windows: bacnpe-env\Scripts\activate
+python -m pip install --upgrade pip
 ```
 
-Requires Python ≥ 3.10, NumPy, SciPy, pandas, tqdm, PyTorch, sbi,
-matplotlib and openpyxl. It also needs `six`, which `sbi.analysis` imports
-without declaring it. R is not needed.
+**2. Install bacnpe from GitHub.**
+
+```bash
+pip install git+https://github.com/haochu-liu/bacnpe.git
+```
+
+Add `@<tag>` or `@<commit>` after `.git` to install a specific release,
+e.g. the version used for the paper.
+
+**Or, to modify the code or run the tests, clone the repository** and
+install it in editable mode with the test dependencies:
+
+```bash
+git clone https://github.com/haochu-liu/bacnpe.git
+cd bacnpe
+pip install -e ".[test]"
+pytest
+```
+
+**3. Check the installation.**
+
+```bash
+python -c "import bacnpe, bacnpe.npe, bacnpe.detection; print(bacnpe.__version__)"
+```
+
+**GPU (optional).** pip installs the default PyTorch build. For a
+particular CUDA version, first install PyTorch with the command from
+[pytorch.org](https://pytorch.org/get-started/locally/), then install
+bacnpe. Simulations run on the CPU in any case. `train_npe` takes
+`device="cuda"`, and `sample_posteriors` then samples on the same device.
 
 ## Quick start
 
