@@ -176,8 +176,7 @@ node_site = add_mutation(arg, theta_site=0.05)           # bool (n_nodes, L); fi
 z = segment_summary_stats(tree, node_site[:tree.n])      # the same 30-entry vector
 ```
 
-`rho_site` and `theta_site` are ρ_s and θ_s of the paper: ρ_s/2 and θ_s/2
-are the rates per site and unit of branch length.
+`rho_site` and `theta_site` are $ρ_s$ and $θ_s$ of the paper: $ρ_s/2$ and $θ_s/2$ are the rates per site and unit of branch length.
 
 ### 3. Summary statistics
 
@@ -194,14 +193,14 @@ names are in `bacnpe.summary_stats.STAT_NAMES`:
 | 18, 19, 20 | Watterson's θ, Tajima's π, Wakeley's π | S1, S2, S9 |
 | 21 | Tajima's D | S3–S6 |
 | 22, 23 | Wall's B and Q | S16, S17 |
-| 24 | Hudson's R_M | — |
-| 25 | Kelly's Z_nS | S15 |
-| 26–28 | a, b, c of the fit r² = a·exp(−b·d) + c | S18 |
+| 24 | Hudson's $R_M$ | — |
+| 25 | Kelly's $Z_{nS}$ | S15 |
+| 26–28 | a, b, c of the fit $r² = a \cdot \exp(−b \cdot d) + c$ | S18 |
 | 29 | Length ℓ | Eq. 9 |
 
 ### 4. Simulating a training set
 
-`parallel_sim` draws ρ_s, θ_s and ℓ independently from uniform priors.
+`parallel_sim` draws $ρ_s$, $θ_s$ and ℓ independently from uniform priors.
 ℓ is discrete uniform, with both ends included. It then runs the simulator
 for each draw in a pool of worker processes. It writes two files to
 `save_dir`, and row *i* of both belongs to the same simulation:
@@ -317,47 +316,45 @@ theta_post = sample_posteriors(posterior, x_obs, num_samples=5000, seed=1)  # (n
 ### 7. Hotspot detection (ppDoG)
 
 `bacnpe.detection` implements the ppDoG detector (Section 2.5,
-Supplementary S6), separately for ρ_s and θ_s. For every posterior draw:
+Supplementary S6), separately for $ρ_s$ and $θ_s$. For every posterior draw:
 
-1. Take the log rates, Λ = log λ.
-2. Smooth them along the circular chromosome with a narrow (h_N) and a
-   broad (h_B) Gaussian kernel. The weights use circular distances and the
-   precision 1/(v_j + τ²) of each gene's log-rate posterior.
-3. Compute the score D = N − B. exp(D) is the local-to-background fold
+1. Take the log rates, $Λ = \log λ$.
+2. Smooth them along the circular chromosome with a narrow ($h_N$) and a
+   broad ($h_B$) Gaussian kernel. The weights use circular distances and the
+   precision $1/(v_j + τ²)$ of each gene's log-rate posterior.
+3. Compute the score $D = N − B$. $\exp(D)$ is the local-to-background fold
    enrichment.
 
-A gene is a candidate when P(D > log F_min) ≥ 0.9. Runs of neighbouring
+A gene is a candidate when $P(D > \log F_{min}) ≥ 0.9$. Runs of neighbouring
 candidates, including runs across the origin, are merged into candidate
 hotspot regions.
 
 ```python
 from bacnpe.detection import detect_hotspots, save_hotspot_tables
 
-common = dict(chromosome_length_bp=2_902_619, gene_ends=gene_ends,
-              narrow_bandwidth_bp=10_000, broad_bandwidth_bp=1_000_000)
-recomb = detect_hotspots(gene_starts, theta_post[:, :, 0], min_fold_enrichment=1.2, **common)
-mutate = detect_hotspots(gene_starts, theta_post[:, :, 1], min_fold_enrichment=40, **common)
+settings = dict(
+    gene_ends=gene_ends,
+    narrow_bandwidth_bp=100_000,
+    broad_bandwidth_bp=1_000_000,
+    probability_threshold=0.90,
+    residual_log_sd=0.20,
+    random_state=10,
+    max_gap_bp=800_000,
+)
+recomb = detect_hotspots(gene_starts, theta_post[:, :, 0], chromosome_length_bp,
+                         min_fold_enrichment=4, **settings)
+print(recomb.summary())
 
-print(recomb.summary())                                   # candidate regions
-recomb.plot(rate_label="Recombination rate",
-            title_text="S. aureus Recombination Rate with Detected Candidate Hotspots",
-            save_path="staph_recomb_ppdog.pdf")           # three-panel figure (Figures 4–9)
-gene_info.iloc[recomb.segment_gene_indices()[0]]          # genes in the first region
+recomb.plot(
+    rate_label="Recombination rate",
+    title_text="E. coli Recombination Rate with Detected Candidate Hotspots",
+    hotspot_padding_bp=10_000,
+    save_path=OUTPUT / "ecoli_local_recomb_dog.pdf",
+)
+plt.show()
 
-save_hotspot_tables({"Recombination": recomb.to_dataframe(),     # Tables S4–S6
-                     "Mutation": mutate.to_dataframe()}, "staph_hotspots.xlsx")
+recomb_hotspots = recomb.to_dataframe()
 ```
-
-These are the settings of the paper (Table S1). In all cases τ = 0.2
-(`residual_log_sd`, the default) and the probability threshold is 0.9.
-
-| Dataset | Rate | h_N (bp) | h_B (bp) | F_min |
-|---|---|---|---|---|
-| B. cereus | recombination, mutation | 10,000 | 1,000,000 | 1.5 |
-| S. aureus | recombination | 10,000 | 1,000,000 | 1.2 |
-| S. aureus | mutation | 10,000 | 1,000,000 | 40 |
-| E. coli | recombination | 100,000 | 1,000,000 | 4 |
-| E. coli | mutation | 100,000 | 1,000,000 | 100 |
 
 - **Defaults** of `detect_hotspots`:
   - h_N = 10 kb, h_B = 1 Mb, τ = 0.2;
