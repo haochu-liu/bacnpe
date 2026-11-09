@@ -248,22 +248,25 @@ The flow and training values are the defaults of `train_npe`.
 ```python
 import numpy as np
 import torch
-from bacnpe.npe import LeaveLengthOut_NN, build_prior, train_npe, save_npe, load_npe
+from bacnpe.npe import LeaveLengthOut_NN, train_npe, save_npe, load_npe
 
 theta = np.loadtxt("sims/ecoli/params.csv", delimiter=",")   # (n_sims, 3): rho, theta, L
 x = np.loadtxt("sims/ecoli/stats.csv", delimiter=",")        # (n_sims, 30)
 
-prior = build_prior(rho_range=(0, 0.2), theta_range=(0, 0.1), L_range=(400, 10000))
 torch.manual_seed(100)                 # reproducible embedding weights
 embedding = LeaveLengthOut_NN(input_dim=30, num_hiddens=128, num_hidden_layers=1, num_outputs=2)
-result = train_npe(theta, x, prior, embedding_net=embedding, seed=100)
+result = train_npe(theta, x, embedding_net=embedding, seed=100)
 
 save_npe(result, "sims/ecoli/trained_npe_posterior.pt")
 posterior = load_npe("sims/ecoli/trained_npe_posterior.pt")["posterior"]   # sbi DirectPosterior
 ```
 
-- Use the same ranges in `build_prior` as in `parallel_sim`. The posterior
-  then discards draws outside the prior support (Algorithm 2, line 12).
+- By default (`prior=None`) sbi uses an empirical prior built from `theta`.
+  It has no support limits, so posterior draws are not restricted to the
+  simulated ranges and rates can be non-positive. To discard draws outside
+  the ranges (Algorithm 2, line 12), pass a prior with the same ranges as
+  `parallel_sim`:
+  `train_npe(theta, x, build_prior((0, 0.2), (0, 0.1), (400, 10000)), ...)`.
 - `embedding_net=None` trains the flow directly on all 30 entries. This is
   the reference model of S8 and the setting of the benchmark in S7.
 - `train_npe` drops simulations with NaN/inf statistics first. The number
@@ -297,10 +300,11 @@ posterior = load_npe("sims/ecoli/trained_npe_posterior.pt")
 theta_post = sample_posteriors(posterior, x_obs, num_samples=5000, seed=1)  # (n_genes, 5000, 3)
 ```
 
-- **Prior support:** draws outside the prior support are discarded and
-  redrawn, as in Algorithm 2. This needs a posterior trained with a prior
-  from `build_prior`. `reject_outside_prior=False` keeps them, as the
-  B. cereus and S. aureus notebooks did, and can give non-positive rates.
+- **Prior support:** if the posterior was trained with a prior from
+  `build_prior`, draws outside its support are discarded and redrawn, as in
+  Algorithm 2 (`reject_outside_prior=False` keeps them). With the default
+  `prior=None` of `train_npe` nothing is discarded, and rates can be
+  non-positive.
 - **Invalid genes:** rows of `x_obs` with NaN or inf get NaN samples, with
   a warning.
 - **Genes without segregating sites** (`prop_segregating_sites == 0`)
@@ -374,7 +378,8 @@ recomb_hotspots = recomb.to_dataframe()
   `save_hotspot_tables` writes an Excel workbook (one sheet per table) when
   the path ends in `.xlsx`, and otherwise a folder of CSV files.
 - **Non-positive draws** are replaced by machine epsilon before taking
-  logs. With a prior from `build_prior` there are normally none.
+  logs. They occur when `train_npe` was run without a prior (the default).
+  With a prior from `build_prior` there are normally none.
 
 ## Paper sections and code
 

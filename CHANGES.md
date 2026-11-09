@@ -99,13 +99,13 @@ The minimum Python version is now 3.10, because sbi requires it.
 - **Prior:** `build_prior(rho_range, theta_range, L_range)` takes the same
   ranges as `parallel_sim`. The notebooks built a prior but never passed it
   to `NPE_C`, so sbi used an empirical prior instead (the saved checkpoints
-  contain `ImproperEmpirical`). `train_npe` passes the prior. Training is
-  unchanged, but posterior samples outside the prior are now rejected by
-  default.
+  contain `ImproperEmpirical`). `train_npe` keeps this as its default. When
+  a prior from `build_prior` is passed, training is unchanged, but posterior
+  samples outside the prior are rejected.
 - **Optional prior and embedding:** `train_npe(theta, x, prior=None,
-  embedding_net=None)`. With no embedding network, the flow is conditioned
-  on the full z-scored `x`. To get the notebook setup, pass
-  `LeaveLengthOut_NN(30, 128, 1, 2)`.
+  embedding_net=None)`; both default to None. With no embedding network, the
+  flow is conditioned on the full z-scored `x`. To get the notebook setup,
+  pass `LeaveLengthOut_NN(30, 128, 1, 2)`.
 - **Seeds:** `train_npe(seed=...)` seeds torch and NumPy before building and
   training the flow. It restores the caller's random states afterwards.
   An embedding network passed in is initialised when you create it, so seed
@@ -146,9 +146,10 @@ The minimum Python version is now 3.10, because sbi requires it.
   - `seed` gives reproducible draws without changing torch's global random
     state.
   - `reject_outside_prior` defaults to True, as in Algorithm 2 of the
-    paper. The bacillus and staph notebooks used False, which gave the
-    non-positive draws that `detect_hotspots` clips. The ecoli notebook
-    used True.
+    paper. It only has an effect on a posterior trained with a prior.
+    The notebooks set it to False (bacillus, staph) or True (ecoli), but
+    trained without a prior, so nothing was rejected in either case. This
+    is where the non-positive draws that `detect_hotspots` clips come from.
 
 ## Hotspot detection (`bacnpe/detection/`)
 

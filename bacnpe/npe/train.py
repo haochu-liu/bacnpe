@@ -104,7 +104,7 @@ def build_density_estimator(
 def train_npe(
     theta,
     x,
-    prior: Optional[Distribution],
+    prior: Optional[Distribution] = None,
     *,
     seed: int = 100,
     embedding_net: Optional[nn.Module] = None,
@@ -125,7 +125,8 @@ def train_npe(
 
     Simulations with NaN or infinite values (e.g. Tajima's D when there is no
     segregating site) are dropped first. The flow and training defaults match
-    the original notebooks. By default there is no embedding network.
+    the original notebooks. By default there is no prior and no embedding
+    network.
 
     Training and validation losses per epoch are in
     ``result.inference.summary``. To plot them, run
@@ -138,12 +139,13 @@ def train_npe(
         ``params.csv`` from :func:`bacnpe.parallel_sim`.
     x : array_like or torch.Tensor, shape (n_sims, 30)
         Summary statistics, e.g. the rows of ``stats.csv``.
-    prior : torch Distribution or None
-        The prior, normally from :func:`bacnpe.npe.build_prior` with the
-        ranges used for the simulations. It does not change training, but the
-        posterior uses it to reject samples outside the prior's support.
+    prior : torch Distribution or None, default None
         ``None`` lets sbi use an empirical prior built from `theta`, which is
-        what the original notebooks ended up doing.
+        what the original notebooks ended up doing. It has no support limits,
+        so posterior draws are not restricted to the simulated ranges and
+        rates can be non-positive. To restrict them, pass a prior from
+        :func:`bacnpe.npe.build_prior` with the ranges used for the
+        simulations; the posterior then rejects samples outside its support.
     seed : int, default 100
         Seeds torch and NumPy before the network is built and trained, so the
         network weights are reproducible too. The caller's random states are

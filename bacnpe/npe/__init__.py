@@ -7,7 +7,8 @@ torch is only loaded when NPE is used.
 Public API
 ----------
 build_prior
-    The prior on (rho_site, theta_site, L), using the ranges from the simulations.
+    Optional prior on (rho_site, theta_site, L), using the ranges from the
+    simulations; pass it to ``train_npe`` to restrict posterior draws to them.
 train_npe
     Train NPE on all simulations and return an :class:`NPEResult`.
 build_density_estimator
@@ -22,11 +23,10 @@ DiscreteUniform, LeaveLengthOut_NN
 Example
 -------
 >>> import numpy as np
->>> from bacnpe.npe import build_prior, train_npe, save_npe
+>>> from bacnpe.npe import train_npe, save_npe
 >>> theta = np.loadtxt("sims/params.csv", delimiter=",")   # doctest: +SKIP
 >>> x = np.loadtxt("sims/stats.csv", delimiter=",")        # doctest: +SKIP
->>> prior = build_prior((0, 0.2), (0, 0.1), (400, 10000))  # doctest: +SKIP
->>> result = train_npe(theta, x, prior, seed=100)          # doctest: +SKIP
+>>> result = train_npe(theta, x, seed=100)                 # doctest: +SKIP
 >>> save_npe(result, "trained_npe_posterior.pt")           # doctest: +SKIP
 """
 from .checkpoint import load_npe, save_npe

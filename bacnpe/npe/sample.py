@@ -60,10 +60,10 @@ def sample_posteriors(
         Number of posterior draws per gene (M in the paper).
     reject_outside_prior : bool, default True
         Discard draws outside the prior support, as in Algorithm 2 (and
-        resample until `num_samples` draws are kept). This needs a posterior
-        trained with a prior (e.g. from :func:`build_prior`). The
-        B. cereus and S. aureus notebooks used False, which can give
-        non-positive rates.
+        resample until `num_samples` draws are kept). This only has an effect
+        if the posterior was trained with a prior (e.g. from
+        :func:`build_prior`). With ``train_npe``'s default ``prior=None``
+        nothing is discarded, and rates can be non-positive.
     seed : int, optional
         Seed for torch's random generator, for reproducible draws. The
         caller's random state is restored afterwards. If None, the current
