@@ -31,15 +31,15 @@ NPE and saves the posterior there.
 | `data/cf.nwk` | Clonal genealogy of 27 *E. coli* genomes, estimated by ClonalFrame (Newick). |
 | `data/ecoli_theta.csv` | Parameters $(ρ_s, θ_s, ℓ)$ of 50,000 simulations on the *E. coli* genealogy, with δ = 542 bp. |
 | `data/ecoli_x.csv` | The 30 summary statistics of the same simulations, row by row. |
-| `data/ecoli_block_info.csv` | The 836 observed alignment blocks: length and start/end positions on *E. coli* 536. |
+| `data/ecoli_block_info.csv` | Observed alignment blocks: length and start/end positions on *E. coli* 536. |
 | `data/ecoli_block_summary_stats.csv` | Observed summary statistics of the blocks. |
 | `data/ecoli_trained_npe.pt` | Trained posterior for *E. coli*. |
 | `data/bacillus_theta.csv`, `data/bacillus_x.csv` | Parameters and summary statistics of 50,000 simulations on the *B. cereus* genealogy, with δ = 236 bp. |
-| `data/bacillus_block_info.csv` | The 1,277 observed alignment blocks: length and start/end positions on *B. anthracis* Ames 0581. |
+| `data/bacillus_block_info.csv` | Observed alignment blocks: length and start/end positions on *B. anthracis* Ames 0581. |
 | `data/bacillus_block_summary_stats.csv` | Observed summary statistics of the blocks. |
 | `data/bacillus_trained_npe.pt` | Trained posterior for *B. cereus*. |
 | `data/staph_theta.csv`, `data/staph_x.csv` | Parameters and summary statistics of 50,000 simulations on the *S. aureus* genealogy, with δ = 454 bp. |
-| `data/staph_core_gene_info.csv` | The 1,982 core genes: length and start/end positions on *S. aureus* MRSA252. |
+| `data/staph_core_gene_info.csv` | Core genes: length and start/end positions on *S. aureus* MRSA252. |
 | `data/staph_core_gene_summary_stats.csv` | Observed summary statistics of the genes. |
 | `data/staph_trained_npe.pt` | Trained posterior for *S. aureus*. |
 
