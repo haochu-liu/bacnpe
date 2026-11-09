@@ -61,8 +61,8 @@ python -m pip install --upgrade pip
 pip install git+https://github.com/haochu-liu/bacnpe.git
 ```
 
-Add `@<tag>` or `@<commit>` after `.git` to install a specific release,
-e.g. the version used for the paper.
+Add `@v1.0.0` after `.git` to install a specific release, e.g. the version
+used for the paper.
 
 **Or, to modify the code or run the tests, clone the repository** and
 install it in editable mode with the test dependencies:
@@ -467,8 +467,6 @@ The suite checks:
 - "golden" vectors produced by the original implementation with fixed seeds;
 - the conversion of estimated trees against the output of the original R
   scripts.
-
-See `CHANGES.md` for what changed relative to the original scripts.
 
 ## Citation and license
 

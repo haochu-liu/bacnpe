@@ -44,7 +44,7 @@ from .simulation.seq_sim import ClonalOrigin_seq_sim
 from .summary_stats.segment_stats import segment_summary_stats
 from .tree.clonal_genealogy import ClonalTree
 
-__version__ = "0.3.0"
+__version__ = "1.0.0"
 
 __all__ = ["ClonalTree", "ARG", "add_mutation", "ClonalOrigin_seq_sim",
            "parallel_sim", "segment_summary_stats", "__version__"]
